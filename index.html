@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صياد السمك | Fishing Adventure — د. محسن الكاشف</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Tajawal for Arabic, Inter for LTR -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- PDF.js for real PDF parsing in Teacher Dashboard & Book Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <style>
+        :root {
+            --ui-scale: 1;
+            --anim-speed: 1s;
+        }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            background: linear-gradient(180deg, #041c32 0%, #04293a 50%, #064663 100%);
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-size: calc(1rem * var(--ui-scale));
+        }
+        [dir="ltr"] body {
+            font-family: 'Inter', 'Cairo', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        /* Game Buttons & Bubbly Effects */
+        .btn-game {
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.25);
+        }
+        .btn-game:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 0 rgba(0, 0, 0, 0.35), 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn-game:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn-game:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        /* Floating & Wave Animations */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(250, 204, 21, 0.85); }
+        }
+        @keyframes cardFlipIn {
+            0% { transform: perspective(1000px) rotateY(90deg) scale(0.7); opacity: 0; }
+            70% { transform: perspective(1000px) rotateY(-10deg) scale(1.05); opacity: 1; }
+            100% { transform: perspective(1000px) rotateY(0deg) scale(1); opacity: 1; }
+        }
+        @keyframes bubbleRise {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            30% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+        .animate-float {
+            animation: floatSlow calc(3.5s * var(--anim-speed)) ease-in-out infinite;
+        }
+        .animate-glow {
+            animation: pulseGlow 2s infinite;
+        }
+        .animate-card-reveal {
+            animation: cardFlipIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Rarity Borders & Gradients */
+        .rarity-common { border-color: #94a3b8; background: linear-gradient(145deg, #1e293b, #334155); }
+        .rarity-uncommon { border-color: #22c55e; background: linear-gradient(145deg, #064e3b, #14532d); }
+        .rarity-rare { border-color: #3b82f6; background: linear-gradient(145deg, #1e3a8a, #1d4ed8); }
+        .rarity-epic { border-color: #a855f7; background: linear-gradient(145deg, #4c1d95, #6b21a8); }
+        .rarity-legendary { border-color: #eab308; background: linear-gradient(145deg, #713f12, #a16207, #ca8a04); box-shadow: 0 0 25px rgba(234, 179, 8, 0.5); }
+        .rarity-extinct { border-color: #f97316; background: linear-gradient(145deg, #431407, #7c2d12, #9a3412); box-shadow: 0 0 25px rgba(249, 115, 22, 0.5); }
+
+        /* Silhouette for undiscovered fish */
+        .fish-silhouette {
+            filter: brightness(0) invert(0.15) drop-shadow(0 0 4px rgba(56, 189, 248, 0.3));
+        }
+
+        /* Glassmorphism Cards */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+        .glass-header {
+            background: rgba(7, 25, 46, 0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 2px solid rgba(56, 189, 248, 0.35);
+        }
+
+        /* Active Tab Styling */
+        .nav-tab-active {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #fff;
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col select-none">
+
+    <!-- ==================== LOADING SCREEN ==================== -->
+    <div id="loading-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-sky-900 via-cyan-950 to-slate-950 transition-opacity duration-500">
+        <div class="relative w-36 h-36 mb-6 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border-4 border-cyan-400/30 border-t-amber-400 animate-spin"></div>
+            <div class="text-6xl animate-float">🎣</div>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-cyan-300 mb-2 text-center px-4">
+            صياد السمك | Fishing Adventure
+        </h1>
+        <div class="bg-sky-950/80 border-2 border-amber-400/60 rounded-2xl px-6 py-3 mt-3 shadow-xl text-center">
+            <p class="text-amber-300 font-bold text-lg md:text-xl">إعداد وتطوير د. محسن الكاشف</p>
+            <p class="text-cyan-300 font-semibold text-sm md:text-base tracking-wide">Dr. Mohsen Elkashef</p>
+        </div>
+        <div class="w-64 md:w-80 h-4 bg-slate-800 rounded-full overflow-hidden mt-8 border border-cyan-500/40 p-0.5">
+            <div id="loading-bar" class="h-full bg-gradient-to-r from-cyan-400 via-sky-400 to-amber-400 rounded-full transition-all duration-300" style="width: 15%"></div>
+        </div>
+        <p id="loading-status" class="text-sky-200 text-sm mt-3 font-semibold">جاري تجهيز البحار وتحميل الكتاب التعليمي...</p>
+    </div>
+
+    <!-- ==================== START SCREEN ==================== -->
+    <div id="start-screen" class="fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto bg-gradient-to-b from-sky-400 via-cyan-600 to-blue-950 p-4 md:p-8 hidden">
+        <!-- Animated Decorative Sea Background -->
+        <canvas id="start-bg-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+        <!-- Top Bar on Start Screen -->
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-3 max-w-7xl mx-auto w-full">
+            <div class="flex items-center gap-3 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-2xl border-2 border-amber-400/70 shadow-lg">
+                <span class="text-2xl">👨‍🏫</span>
+                <div>
+                    <div class="text-amber-300 font-extrabold text-sm md:text-base leading-tight">إعداد وتطوير د. محسن الكاشف</div>
+                    <div class="text-cyan-300 font-bold text-xs">Dr. Mohsen Elkashef</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Language Selector Dropdown -->
+                <div class="flex items-center bg-slate-900/80 backdrop-blur-md rounded-2xl p-1.5 border border-cyan-400/50 shadow-lg">
+                    <i class="fa-solid fa-earth-americas text-cyan-300 mx-2"></i>
+                    <select id="start-lang-select" onchange="changeLanguage(this.value)" class="bg-transparent text-white font-bold text-sm focus:outline-none cursor-pointer pr-2">
+                        <option value="ar" class="bg-slate-900">🇸🇦 العربية</option>
+                        <option value="en" class="bg-slate-900">🇬🇧 English</option>
+                        <option value="fr" class="bg-slate-900">🇫🇷 Français</option>
+                        <option value="ru" class="bg-slate-900">🇷🇺 Русский</option>
+                        <option value="tr" class="bg-slate-900">🇹🇷 Türkçe</option>
+                    </select>
+                </div>
+
+                <button onclick="openTeacherLoginModal()" class="btn-game bg-purple-700 hover:bg-purple-600 text-white font-bold px-3.5 py-2 rounded-2xl border border-purple-300/50 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <span data-i18n="teacher_dashboard">لوحة المعلم</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Center Hero Section -->
+        <div class="relative z-10 my-auto py-6 flex flex-col items-center text-center max-w-4xl mx-auto">
+            <!-- Cartoon Boat & Fisherman Hero Illustration -->
+            <div class="relative w-64 h-44 md:w-80 md:h-52 mb-2 animate-float">
+                <svg viewBox="0 0 320 210" class="w-full h-full drop-shadow-2xl">
+                    <!-- Sun & Clouds -->
+                    <circle cx="270" cy="40" r="26" fill="#fde047" opacity="0.9"/>
+                    <!-- Cute Fisherman -->
+                    <g transform="translate(115, 35)">
+                        <!-- Hat -->
+                        <ellipse cx="45" cy="22" rx="34" ry="8" fill="#f59e0b"/>
+                        <path d="M22 22 Q45 -5 68 22 Z" fill="#fbbf24"/>
+                        <rect x="28" y="16" width="34" height="5" rx="2" fill="#dc2626"/>
+                        <!-- Head -->
+                        <circle cx="45" cy="36" r="16" fill="#fed7aa"/>
+                        <!-- Eyes & Smile -->
+                        <circle cx="39" cy="34" r="2.5" fill="#1e293b"/>
+                        <circle cx="51" cy="34" r="2.5" fill="#1e293b"/>
+                        <path d="M38 42 Q45 48 52 42" stroke="#9a3412" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        <!-- Body / Life Vest -->
+                        <rect x="30" y="52" width="30" height="35" rx="8" fill="#0284c7"/>
+                        <rect x="33" y="54" width="10" height="32" rx="4" fill="#f97316"/>
+                        <rect x="47" y="54" width="10" height="32" rx="4" fill="#f97316"/>
+                        <!-- Fishing Rod -->
+                        <path d="M58 65 L145 10" stroke="#78350f" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M145 10 L145 130" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="3,2"/>
+                        <!-- Hook & Jumping Fish -->
+                        <circle cx="145" cy="130" r="4" fill="#ef4444"/>
+                    </g>
+                    <!-- Boat Hull -->
+                    <path d="M45 115 L255 115 L225 165 L75 165 Z" fill="#b45309" stroke="#78350f" stroke-width="4"/>
+                    <path d="M55 125 L245 125 L235 140 L65 140 Z" fill="#f59e0b"/>
+                    <rect x="90" y="128" width="110" height="14" rx="5" fill="#fef3c7"/>
+                    <text x="145" y="139" font-size="10" font-weight="bold" fill="#78350f" text-anchor="middle">FISHING ADVENTURE</text>
+                    <!-- Animated Water Waves -->
+                    <path d="M10 160 Q45 148 80 160 T150 160 T220 160 T290 160 L310 195 L10 195 Z" fill="#0284c7" opacity="0.85"/>
+                    <!-- Cute Fish Jumping -->
+                    <g transform="translate(235, 130) rotate(-25)">
+                        <ellipse cx="22" cy="12" rx="16" ry="9" fill="#fb7185"/>
+                        <polygon points="2,12 -8,3 -6,21" fill="#f43f5e"/>
+                        <circle cx="29" cy="9" r="2.2" fill="#fff"/>
+                        <circle cx="30" cy="9" r="1.2" fill="#000"/>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Game Title Logo -->
+            <div class="bg-slate-900/75 backdrop-blur-xl border-4 border-amber-400 rounded-3xl px-6 py-5 shadow-2xl max-w-2xl w-full">
+                <div class="inline-block bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-xs md:text-sm px-4 py-1 rounded-full mb-2 shadow">
+                    🌟 <span data-i18n="edu_game_badge">اللعبة التعليمية التفاعلية الاحترافية</span> 🌟
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-white drop-shadow-md tracking-tight">
+                    <span class="text-amber-300" data-i18n="game_title">صياد السمك</span>
+                </h1>
+                <p class="text-xl md:text-2xl font-extrabold text-cyan-300 mt-1">Fishing Adventure</p>
+
+                <div class="mt-3 pt-3 border-t border-slate-700/80 flex flex-col sm:flex-row items-center justify-center gap-2 text-sm md:text-base">
+                    <span class="text-amber-300 font-extrabold">إعداد وتطوير د. محسن الكاشف</span>
+                    <span class="hidden sm:inline text-slate-500">|</span>
+                    <span class="text-sky-300 font-bold">Dr. Mohsen Elkashef</span>
+                </div>
+            </div>
+
+            <!-- Active Book Status Pill -->
+            <div class="mt-4 bg-emerald-950/90 border-2 border-emerald-400/70 rounded-2xl px-5 py-2.5 shadow-lg flex items-center gap-3">
+                <i class="fa-solid fa-book-open-reader text-emerald-300 text-xl"></i>
+                <div class="text-right">
+                    <div class="text-xs text-emerald-300 font-bold" data-i18n="active_book_label">الكتاب التعليمي النشط والصفحات المحددة:</div>
+                    <div id="start-active-book-info" class="text-sm md:text-base font-extrabold text-white">الطريق إلى العربية (المستوى الثاني) — صفحات 1 إلى 50</div>
+                </div>
+            </div>
+
+            <!-- Start Screen Action Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 mt-6 w-full max-w-2xl">
+                <button onclick="startGameToTab('fishing')" class="btn-game sm:col-span-2 md:col-span-3 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-slate-950 font-black text-xl md:text-2xl py-4 px-8 rounded-2xl border-2 border-yellow-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play text-2xl"></i>
+                    <span data-i18n="btn_start_play">ابدأ اللعب والمغامرة الآن!</span>
+                </button>
+
+                <button onclick="startGameToTab('books')" class="btn-game bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold py-3.5 px-5 rounded-2xl border border-emerald-300/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-book text-amber-300 text-lg"></i>
+                    <span data-i18n="tab_books">مكتبة الكتب</span>
+                </button>
+
+                <button onclick="startGameToTab('settings')" class="btn-game bg-gradient-to-r from-sky-600 to-blue-700 text-white font-bold py-3.5 px-5 rounded-2xl border border-sky-300/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-gear text-cyan-200 text-lg"></i>
+                    <span data-i18n="tab_settings">الإعدادات واللغة</span>
+                </button>
+
+                <button onclick="openGameInfoModal()" class="btn-game bg-gradient-to-r from-indigo-600 to-violet-700 text-white font-bold py-3.5 px-5 rounded-2xl border border-indigo-300/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-info text-indigo-200 text-lg"></i>
+                    <span data-i18n="btn_game_info">معلومات اللعبة</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Attribution Footer on Start Screen -->
+        <div class="relative z-10 text-center text-xs md:text-sm text-sky-100/90 bg-slate-950/60 backdrop-blur-md py-2.5 px-4 rounded-xl max-w-xl mx-auto">
+            جميع الحقوق محفوظة © صياد السمك | Fishing Adventure — إعداد وتطوير <strong>د. محسن الكاشف (Dr. Mohsen Elkashef)</strong>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN GAME INTERFACE ==================== -->
+    <div id="main-game-ui" class="flex-1 flex flex-col min-h-screen hidden">
+
+        <!-- TOP STATUS BAR -->
+        <header class="glass-header sticky top-0 z-40 px-3 py-2 shadow-xl">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+                <!-- Fisherman Profile & Level -->
+                <div class="flex items-center gap-2.5">
+                    <button onclick="showStartScreen()" title="الشاشة الرئيسية" class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 p-0.5 shadow-md hover:scale-105 transition flex items-center justify-center text-2xl">
+                        🤠
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-white text-sm md:text-base" data-i18n="game_title">صياد السمك</span>
+                            <span class="bg-amber-400 text-slate-950 text-xs font-black px-2 py-0.5 rounded-full">
+                                <span data-i18n="level_short">مستوى</span> <span id="hud-level">1</span>
+                            </span>
+                        </div>
+                        <!-- XP Progress Bar -->
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <div class="w-24 sm:w-32 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-cyan-500/40">
+                                <div id="hud-xp-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <span id="hud-xp-text" class="text-[11px] text-cyan-300 font-bold">0/100 XP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Developer Attribution Pill in Main Menu Header -->
+                <div class="hidden xl:flex items-center gap-2 bg-slate-900/90 border border-amber-400/50 px-3 py-1 rounded-xl">
+                    <i class="fa-solid fa-award text-amber-400"></i>
+                    <span class="text-xs font-bold text-amber-300">إعداد وتطوير د. محسن الكاشف | Dr. Mohsen Elkashef</span>
+                </div>
+
+                <!-- Stats & Quick Actions -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Active Book & Page Range Indicator -->
+                    <button onclick="switchTab('books')" class="bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-400/60 px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold text-emerald-200 transition" title="تغيير الكتاب أو نطاق الصفحات">
+                        <i class="fa-solid fa-book-bookmark text-emerald-400"></i>
+                        <span id="hud-book-badge" class="max-w-[150px] sm:max-w-[220px] truncate">الطريق إلى العربية (1-50)</span>
+                    </button>
+
+                    <!-- Coins -->
+                    <div class="bg-slate-900/90 border border-amber-400/60 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-inner">
+                        <span class="text-base animate-bounce">🪙</span>
+                        <span id="hud-coins" class="font-black text-amber-300 text-sm md:text-base">250</span>
+                    </div>
+
+                    <!-- Discovered Fish Count -->
+                    <button onclick="switchTab('encyclopedia')" class="bg-slate-900/90 border border-cyan-400/50 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-inner hover:bg-slate-800 transition">
+                        <span class="text-base">🐠</span>
+                        <span id="hud-discovered" class="font-black text-cyan-300 text-sm">0/30</span>
+                    </button>
+
+                    <!-- Sound Mute Toggle -->
+                    <button id="btn-sound-toggle" onclick="toggleMute()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 flex items-center justify-center text-cyan-300 transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+
+                    <!-- Teacher Dashboard Button -->
+                    <button onclick="openTeacherLoginModal()" class="bg-purple-800/90 hover:bg-purple-700 text-purple-100 border border-purple-400/50 px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition" title="لوحة تحكم المعلم">
+                        <i class="fa-solid fa-user-tie"></i>
+                        <span class="hidden sm:inline" data-i18n="teacher_short">المعلم</span>
+                    </button>
+
+                    <!-- Settings Button -->
+                    <button onclick="switchTab('settings')" class="w-9 h-9 rounded-xl bg-sky-800 hover:bg-sky-700 border border-sky-400/50 flex items-center justify-center text-white transition">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 12 ORGANIZED NAVIGATION TABS -->
+            <nav class="max-w-7xl mx-auto mt-2 pt-1.5 border-t border-slate-800/80 overflow-x-auto">
+                <div class="flex items-center gap-1.5 pb-1 min-w-max">
+                    <button data-tab="fishing" onclick="switchTab('fishing')" class="nav-tab-btn nav-tab-active px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🎣</span> <span data-i18n="tab_fishing">الصيد</span>
+                    </button>
+                    <button data-tab="books" onclick="switchTab('books')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>📚</span> <span data-i18n="tab_books">مكتبة الكتب</span>
+                    </button>
+                    <button data-tab="shop" onclick="switchTab('shop')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🛒</span> <span data-i18n="tab_shop">المتجر</span>
+                    </button>
+                    <button data-tab="encyclopedia" onclick="switchTab('encyclopedia')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🐠</span> <span data-i18n="tab_encyclopedia">موسوعة الأسماك</span>
+                    </button>
+                    <button data-tab="cards" onclick="switchTab('cards')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🃏</span> <span data-i18n="tab_cards">البطاقات</span>
+                    </button>
+                    <button data-tab="achievements" onclick="switchTab('achievements')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🏆</span> <span data-i18n="tab_achievements">الإنجازات</span>
+                    </button>
+                    <button data-tab="market" onclick="switchTab('market')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>💰</span> <span data-i18n="tab_market">سوق بيع الأسماك</span>
+                        <span id="badge-inventory-count" class="bg-amber-500 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
+                    </button>
+                    <button data-tab="boat" onclick="switchTab('boat')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🚤</span> <span data-i18n="tab_boat">تطوير المركب والسنارة</span>
+                    </button>
+                    <button data-tab="map" onclick="switchTab('map')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>🌊</span> <span data-i18n="tab_map">خريطة البحار</span>
+                    </button>
+                    <button data-tab="logbook" onclick="switchTab('logbook')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>📒</span> <span data-i18n="tab_logbook">سجل الصياد</span>
+                    </button>
+                    <button data-tab="report" onclick="switchTab('report')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>📊</span> <span data-i18n="tab_report">تقرير الطالب</span>
+                    </button>
+                    <button data-tab="settings" onclick="switchTab('settings')" class="nav-tab-btn px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 bg-slate-900/70 text-slate-200 flex items-center gap-1.5 transition">
+                        <span>⚙️</span> <span data-i18n="tab_settings">الإعدادات</span>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ==================== MAIN CONTENT AREA ==================== -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-3 md:p-5 flex flex-col">
+
+            <!-- TAB 1: 🎣 FISHING SCREEN -->
+            <section id="tab-content-fishing" class="tab-section flex-1 flex flex-col gap-3">
+                <!-- Fishing Status & Gauges Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                    <div class="glass-panel rounded-2xl p-2.5 flex items-center gap-2.5">
+                        <div class="text-2xl">🌊</div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] text-sky-300 font-semibold" data-i18n="current_zone">المنطقة البحرية</div>
+                            <div id="fishing-zone-name" class="font-extrabold text-white text-xs sm:text-sm truncate">الشاطئ</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-2.5 flex items-center gap-2.5">
+                        <div class="text-2xl">🎣</div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] text-amber-300 font-semibold" data-i18n="current_rod">السنارة الحالية</div>
+                            <div id="fishing-rod-name" class="font-extrabold text-white text-xs sm:text-sm truncate">سنارة خشبية</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-2.5 flex items-center gap-2.5">
+                        <div class="text-2xl">🚤</div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] text-emerald-300 font-semibold" data-i18n="current_boat">المركب الحالي</div>
+                            <div id="fishing-boat-name" class="font-extrabold text-white text-xs sm:text-sm truncate">مركب صغير</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-2.5 flex items-center gap-2.5">
+                        <div class="text-2xl">📏</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between text-[11px] text-cyan-300 font-semibold">
+                                <span data-i18n="depth_meter">العمق</span>
+                                <span id="fishing-depth-val">0m / 15m</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mt-1">
+                                <div id="fishing-depth-bar" class="h-full bg-cyan-400 transition-all duration-150" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-2.5 flex items-center gap-2.5">
+                        <div class="text-2xl">💪</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between text-[11px] text-amber-300 font-semibold">
+                                <span data-i18n="rod_power">قوة السنارة</span>
+                                <span id="fishing-power-val">100%</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mt-1">
+                                <div id="fishing-power-bar" class="h-full bg-emerald-400 transition-all duration-150" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-2.5 flex items-center gap-2.5">
+                        <div class="text-2xl">⚡</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between text-[11px] text-rose-300 font-semibold">
+                                <span data-i18n="fish_resistance">مقاومة السمكة</span>
+                                <span id="fishing-resist-val">0%</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mt-1">
+                                <div id="fishing-resist-bar" class="h-full bg-rose-500 transition-all duration-150" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Fishing Canvas Container -->
+                <div class="relative flex-1 min-h-[420px] md:min-h-[500px] rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-2xl bg-slate-950">
+                    <canvas id="fishing-canvas" class="w-full h-full block"></canvas>
+
+                    <!-- Floating Status Banner inside Canvas -->
+                    <div id="fishing-status-banner" class="absolute top-3 left-1/2 -translate-x-1/2 bg-slate-900/85 backdrop-blur-md border border-cyan-400/60 px-5 py-2 rounded-full text-xs sm:text-sm font-extrabold text-cyan-200 shadow-lg pointer-events-none text-center">
+                        اضغط على «إلقاء السنارة» لبدء الصيد والإجابة عن أسئلة الكتاب!
+                    </div>
+
+                    <!-- Extinct Fish Special Mission Alert Button (Appears every 8 discoveries or anytime unlocked) -->
+                    <button id="btn-extinct-mission" onclick="triggerExtinctMission()" class="hidden absolute top-14 right-3 btn-game bg-gradient-to-r from-orange-600 to-amber-600 text-white font-black text-xs sm:text-sm px-4 py-2.5 rounded-2xl border-2 border-amber-300 animate-glow flex items-center gap-2">
+                        <span>🦖</span>
+                        <span data-i18n="extinct_mission_btn">رحلة عبر الزمن: اكتشاف سمكة منقرضة!</span>
+                    </button>
+
+                    <!-- Upgrade Rod Opportunity Badge (Every 5 catches) -->
+                    <button id="btn-free-upgrade-alert" onclick="switchTab('boat')" class="hidden absolute top-14 left-3 btn-game bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-xs sm:text-sm px-4 py-2.5 rounded-2xl border-2 border-emerald-200 animate-bounce flex items-center gap-2">
+                        <span>⬆️</span>
+                        <span data-i18n="rod_upgrade_ready">اصطدت 5 أسماك! فرصة تطوير السنارة متاحة</span>
+                    </button>
+                </div>
+
+                <!-- Bottom Fishing Controls Row -->
+                <div class="glass-panel rounded-3xl p-3 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <button onclick="switchTab('map')" class="btn-game bg-sky-700 hover:bg-sky-600 text-white font-bold px-4 py-3 rounded-2xl text-xs sm:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                            <span data-i18n="change_zone">تغيير المنطقة</span>
+                        </button>
+                        <button onclick="switchTab('books')" class="btn-game bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-3 rounded-2xl text-xs sm:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines"></i>
+                            <span data-i18n="change_pages">تغيير الصفحات</span>
+                        </button>
+                    </div>
+
+                    <!-- Main Cast & Reel Buttons -->
+                    <div class="flex items-center gap-3 mx-auto sm:mx-0">
+                        <button id="btn-cast-line" onclick="handleCastButton()" class="btn-game bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-base sm:text-lg border-2 border-yellow-200 flex items-center gap-2.5">
+                            <i class="fa-solid fa-water"></i>
+                            <span data-i18n="btn_cast">إلقاء السنارة</span>
+                        </button>
+                        <button id="btn-reel-line" onclick="handleReelButton()" disabled class="btn-game bg-gradient-to-r from-emerald-500 to-green-600 text-white font-black px-7 py-3.5 rounded-2xl text-base sm:text-lg border-2 border-emerald-200 flex items-center gap-2.5">
+                            <i class="fa-solid fa-arrow-up-from-water-pump"></i>
+                            <span data-i18n="btn_reel">سحب السنارة!</span>
+                        </button>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="text-xs text-slate-300 font-bold flex items-center gap-3">
+                        <span>🐟 <span data-i18n="session_catches">صيد الجلسة:</span> <strong id="fishing-session-count" class="text-amber-300">0</strong></span>
+                        <span>❓ <span data-i18n="remaining_questions">الأسئلة المتبقية بالنطاق:</span> <strong id="fishing-rem-questions" class="text-emerald-300">0</strong></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: 📚 BOOK LIBRARY & 50-PAGE RANGE SELECTOR -->
+            <section id="tab-content-books" class="tab-section hidden flex-col gap-5">
+                <div class="glass-panel rounded-3xl p-5 border-2 border-emerald-400/50">
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-amber-300 flex items-center gap-2.5">
+                                <span>📚</span>
+                                <span data-i18n="book_library_title">مكتبة الكتب التعليمية الخمسة | Book Library</span>
+                            </h2>
+                            <p class="text-sm text-sky-200 mt-1" data-i18n="book_library_desc">
+                                الأسئلة التعليمية مستخرجة حصريًا من الكتاب المحدد ونطاق الصفحات الذي تختاره بدقة تامة دون خلط أو إضافة خارجية.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="btn-game cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 border border-purple-300/50">
+                                <i class="fa-solid fa-file-pdf text-amber-300"></i>
+                                <span>رفع كتاب PDF جديد</span>
+                                <input type="file" accept=".pdf" class="hidden" onchange="handleDirectPdfUpload(event)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 5 Books Grid -->
+                    <div id="books-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- PAGE RANGE SELECTION PANEL (Divided into 50-Page Parts + Custom Range) -->
+                <div id="page-range-selector-panel" class="glass-panel rounded-3xl p-5 border-2 border-cyan-400/60">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-3">
+                        <div>
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-cyan-400" data-i18n="step_2_pages">الخطوة الثانية: تحديد الصفحات</span>
+                            <h3 class="text-xl md:text-2xl font-black text-white mt-0.5" data-i18n="choose_pages_title">
+                                «اختر الصفحات التي تريد التدريب عليها»
+                            </h3>
+                        </div>
+                        <div id="selected-book-summary-badge" class="bg-slate-900 border border-amber-400/50 px-4 py-2 rounded-2xl text-sm font-bold text-amber-300">
+                            الطريق إلى العربية - المستوى الثاني (167 صفحة)
+                        </div>
+                    </div>
+
+                    <!-- 50-Page Parts Checkboxes -->
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-extrabold text-sky-200 text-sm md:text-base" data-i18n="parts_50_pages">أقسام الكتاب (كل جزء 50 صفحة): يمكنك اختيار جزء واحد أو أكثر</h4>
+                            <button onclick="selectAllBookParts()" class="text-xs font-bold text-amber-300 hover:underline">تحديد كل الأجزاء</button>
+                        </div>
+                        <div id="book-50parts-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Custom Manual Page Range -->
+                    <div class="mt-6 pt-5 border-t border-slate-700/80 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+                        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700">
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="checkbox" id="chk-use-custom-range" onchange="toggleCustomPageRange(this.checked)" class="w-5 h-5 accent-amber-400 rounded cursor-pointer">
+                                <label for="chk-use-custom-range" class="font-extrabold text-amber-300 text-sm md:text-base cursor-pointer" data-i18n="custom_range_label">
+                                    استخدام نطاق صفحات مخصص يدويًا (من صفحة ... إلى صفحة ...)
+                                </label>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 mt-3">
+                                <div class="flex-1 min-w-[120px]">
+                                    <label class="block text-xs text-slate-300 mb-1" data-i18n="start_page">صفحة البداية:</label>
+                                    <input type="number" id="input-page-start" min="1" max="167" value="1" onchange="validateCustomRange()" class="w-full bg-slate-800 border border-cyan-500/50 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-amber-400">
+                                </div>
+                                <div class="flex-1 min-w-[120px]">
+                                    <label class="block text-xs text-slate-300 mb-1" data-i18n="end_page">صفحة النهاية:</label>
+                                    <input type="number" id="input-page-end" min="1" max="167" value="50" onchange="validateCustomRange()" class="w-full bg-slate-800 border border-cyan-500/50 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-amber-400">
+                                </div>
+                                <button onclick="applyCustomRange()" class="btn-game bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl text-sm mt-4">
+                                    تطبيق النطاق
+                                </button>
+                            </div>
+                            <p id="custom-range-feedback" class="text-xs text-emerald-300 mt-2 font-semibold"></p>
+                        </div>
+
+                        <!-- Start Training Action Box -->
+                        <div class="bg-gradient-to-br from-emerald-900/70 to-teal-950/90 p-4 rounded-2xl border-2 border-emerald-400/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xs text-emerald-300 font-bold">ملخص النطاق المختار للتدريب والصيد:</div>
+                                <div id="training-range-summary" class="text-base md:text-lg font-black text-white mt-0.5">الصفحات: 1 – 50 (42 سؤال متاح)</div>
+                                <div class="flex items-center gap-3 mt-1 text-xs text-sky-200">
+                                    <span>✅ تم إكمال: <strong id="training-range-completed">0%</strong></span>
+                                    <label class="flex items-center gap-1 cursor-pointer text-amber-300 font-bold">
+                                        <input type="checkbox" id="chk-review-mode" onchange="toggleReviewMode(this.checked)" class="accent-amber-400">
+                                        <span>وضع مراجعة الأسئلة الخاطئة/السابقة</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button onclick="startTrainingAndFishing()" class="btn-game bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black px-6 py-3.5 rounded-2xl text-base whitespace-nowrap flex items-center gap-2">
+                                <i class="fa-solid fa-fish-fins"></i>
+                                <span data-i18n="btn_start_training">بدء التدريب والصيد</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: 🛒 SHOP (RODS, BAITS, BOATS, ENGINES, CLOTHES, TOOLS) -->
+            <section id="tab-content-shop" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-amber-300 flex items-center gap-2">
+                                <span>🛒</span> <span data-i18n="shop_title">متجر الصياد والمعدات الاحترافية</span>
+                            </h2>
+                            <p class="text-sm text-sky-200 mt-1" data-i18n="shop_desc">اشترِ أقوى السنارات والطعوم والمحركات والمعدات النادرة للوصول إلى الأعماق السحيقة!</p>
+                        </div>
+                        <!-- Shop Category Filter -->
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="filterShop('all')" data-shop-cat="all" class="shop-cat-btn bg-amber-400 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-xs">الكل</button>
+                            <button onclick="filterShop('rods')" data-shop-cat="rods" class="shop-cat-btn bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs">🎣 السنارات</button>
+                            <button onclick="filterShop('baits')" data-shop-cat="baits" class="shop-cat-btn bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs">🪱 الطعوم</button>
+                            <button onclick="filterShop('boats')" data-shop-cat="boats" class="shop-cat-btn bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs">🚤 المراكب</button>
+                            <button onclick="filterShop('engines')" data-shop-cat="engines" class="shop-cat-btn bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs">⚙️ المحركات</button>
+                            <button onclick="filterShop('clothes')" data-shop-cat="clothes" class="shop-cat-btn bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs">🦺 الملابس</button>
+                            <button onclick="filterShop('tools')" data-shop-cat="tools" class="shop-cat-btn bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs">🧭 أدوات ومعدات نادرة</button>
+                        </div>
+                    </div>
+
+                    <div id="shop-items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: 🐠 FISH ENCYCLOPEDIA & MUSEUM -->
+            <section id="tab-content-encyclopedia" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-cyan-300 flex items-center gap-2">
+                                <span>🐠</span> <span data-i18n="encyclopedia_title">متحف وموسوعة الأسماك العلمية</span>
+                            </h2>
+                            <p class="text-sm text-slate-300 mt-1">معلومات علمية حقيقية ودقيقة مع الأسماء العلمية اللاتينية. الأسماك غير المكتشفة تظهر كظلال غامضة!</p>
+                        </div>
+                        <div class="bg-slate-900 border border-cyan-500/40 px-4 py-2 rounded-2xl text-right">
+                            <div class="text-xs text-cyan-300 font-bold">نسبة إكمال الموسوعة</div>
+                            <div id="encyclopedia-completion-text" class="text-lg font-black text-amber-300">0% (0 / 30)</div>
+                        </div>
+                    </div>
+
+                    <!-- Search & Category Filter -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+                        <div class="relative flex-1 min-w-[220px]">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="encyclopedia-search" oninput="renderEncyclopedia()" placeholder="ابحث عن اسم السمكة أو الاسم العلمي..." class="w-full bg-slate-900 border border-slate-700 rounded-2xl pr-10 pl-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-400">
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setEncyclopediaFilter('all')" class="enc-filter-btn bg-cyan-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">الكل</button>
+                            <button onclick="setEncyclopediaFilter('discovered')" class="enc-filter-btn bg-slate-800 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs">المكتشفة</button>
+                            <button onclick="setEncyclopediaFilter('undiscovered')" class="enc-filter-btn bg-slate-800 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs">غير المكتشفة</button>
+                            <button onclick="setEncyclopediaFilter('rare')" class="enc-filter-btn bg-slate-800 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs">النادرة والملحمية</button>
+                            <button onclick="setEncyclopediaFilter('extinct')" class="enc-filter-btn bg-slate-800 text-orange-300 font-bold px-3 py-1.5 rounded-xl text-xs">🦖 المنقرضة</button>
+                            <button onclick="setEncyclopediaFilter('legendary')" class="enc-filter-btn bg-slate-800 text-amber-300 font-bold px-3 py-1.5 rounded-xl text-xs">👑 الأسطورية</button>
+                        </div>
+                    </div>
+
+                    <div id="encyclopedia-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: 🃏 DISCOVERY & EXTINCT CARDS -->
+            <section id="tab-content-cards" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-amber-300 flex items-center gap-2">
+                                <span>🃏</span> <span data-i18n="cards_title">مجموعة بطاقات الاكتشاف والأسماك المنقرضة</span>
+                            </h2>
+                            <p class="text-sm text-sky-200 mt-1">اضغط على أي بطاقة مكتشفة لعرضها بحركة ثلاثية الأبعاد مع المعلومة المدهشة وتاريخ الاكتشاف.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="bg-slate-900 border border-amber-400/50 px-4 py-2 rounded-2xl text-sm font-bold text-amber-300">
+                                البطاقات المكتسبة: <strong id="cards-owned-count">0</strong>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="cards-collection-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: 🏆 ACHIEVEMENTS & DAILY QUESTS -->
+            <section id="tab-content-achievements" class="tab-section hidden flex-col gap-5">
+                <!-- Daily Quests -->
+                <div class="glass-panel rounded-3xl p-5 border-2 border-emerald-400/40">
+                    <h2 class="text-xl md:text-2xl font-black text-emerald-300 flex items-center gap-2 mb-3">
+                        <span>📅</span> <span data-i18n="daily_quests_title">المهام اليومية للصياد</span>
+                    </h2>
+                    <div id="daily-quests-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="glass-panel rounded-3xl p-5 border-2 border-amber-400/40">
+                    <h2 class="text-xl md:text-2xl font-black text-amber-300 flex items-center gap-2 mb-3">
+                        <span>🏆</span> <span data-i18n="achievements_title">وسام الإنجازات الكبرى</span>
+                    </h2>
+                    <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: 💰 FISH MARKET & FINANCIAL LEDGER -->
+            <section id="tab-content-market" class="tab-section hidden flex-col gap-5">
+                <div class="glass-panel rounded-3xl p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-amber-300 flex items-center gap-2">
+                                <span>💰</span> <span data-i18n="market_title">سوق بيع الأسماك والسجل المالي</span>
+                            </h2>
+                            <p class="text-sm text-sky-200 mt-1">بِع الأسماك التي اصطدتها لكسب العملات الذهبية، أو قم بقفل وحفظ الأسماك النادرة في مجموعتك الخاصة!</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="sellAllUnlockedFish()" class="btn-game bg-gradient-to-r from-emerald-500 to-green-600 text-white font-black px-5 py-2.5 rounded-2xl text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-coins"></i>
+                                <span data-i18n="btn_sell_all">بيع جميع الأسماك غير المحفوظة</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Caught Fish Inventory List -->
+                    <div id="market-inventory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 mt-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Financial Ledger -->
+                <div class="glass-panel rounded-3xl p-5">
+                    <h3 class="text-xl font-black text-cyan-300 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span data-i18n="financial_ledger">السجل المالي (المبيعات والمشتريات)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-emerald-500/40">
+                            <div class="text-xs text-emerald-300 font-bold">إجمالي العملات المكتسبة</div>
+                            <div id="ledger-total-earned" class="text-xl font-black text-white mt-1">0 🪙</div>
+                        </div>
+                        <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-rose-500/40">
+                            <div class="text-xs text-rose-300 font-bold">إجمالي العملات المصروفة</div>
+                            <div id="ledger-total-spent" class="text-xl font-black text-white mt-1">0 🪙</div>
+                        </div>
+                        <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-amber-500/40">
+                            <div class="text-xs text-amber-300 font-bold">الرصيد الحالي</div>
+                            <div id="ledger-current-balance" class="text-xl font-black text-amber-300 mt-1">250 🪙</div>
+                        </div>
+                    </div>
+                    <div id="ledger-history-list" class="max-h-56 overflow-y-auto space-y-2 pr-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: 🚤 BOAT & ROD UPGRADES -->
+            <section id="tab-content-boat" class="tab-section hidden flex-col gap-5">
+                <!-- Rod Upgrades Panel -->
+                <div class="glass-panel rounded-3xl p-5 border-2 border-amber-400/50">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-3">
+                        <div>
+                            <h2 class="text-xl md:text-2xl font-black text-amber-300 flex items-center gap-2">
+                                <span>🎣</span> <span data-i18n="rod_upgrade_title">ورشة تطوير السنارة (فرصة تطوير كل 5 أسماك)</span>
+                            </h2>
+                            <p class="text-sm text-sky-200">كلما اصطدت 5 أسماك تحصل على نقطة تطوير لزيادة طول الحبل وقوة التحمل وسرعة السحب!</p>
+                        </div>
+                        <div class="bg-emerald-950 border border-emerald-400 px-4 py-2 rounded-2xl text-sm font-black text-emerald-300">
+                            نقاط التطوير المتاحة: <span id="rod-upgrade-tokens" class="text-white text-lg">0</span>
+                        </div>
+                    </div>
+
+                    <div id="rod-upgrade-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Boats Fleet Panel -->
+                <div class="glass-panel rounded-3xl p-5 border-2 border-cyan-400/50">
+                    <h2 class="text-xl md:text-2xl font-black text-cyan-300 flex items-center gap-2 mb-4">
+                        <span>🚤</span> <span data-i18n="boat_upgrade_title">أسطول المراكب وتطوير السفينة</span>
+                    </h2>
+                    <div id="boats-fleet-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 9: 🌊 INTERACTIVE SEA MAP (10 ZONES) -->
+            <section id="tab-content-map" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5">
+                    <h2 class="text-2xl md:text-3xl font-black text-cyan-300 flex items-center gap-2 mb-1">
+                        <span>🌊</span> <span data-i18n="sea_map_title">خريطة البحار والأعماق العشرة</span>
+                    </h2>
+                    <p class="text-sm text-sky-200 mb-4">اختر المنطقة البحرية للسفر إليها. المناطق الأعمق تحتوي على أسماك أغلى وأندر وتتطلب سنارات ومراكب متطورة!</p>
+
+                    <div id="sea-map-zones-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 10: 📒 ANGLER LOGBOOK -->
+            <section id="tab-content-logbook" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5">
+                    <h2 class="text-2xl md:text-3xl font-black text-amber-300 flex items-center gap-2 mb-4">
+                        <span>📒</span> <span data-i18n="logbook_title">سجل الصياد الشامل</span>
+                    </h2>
+                    <div id="logbook-stats-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div id="logbook-details-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 11: 📊 STUDENT EDUCATIONAL REPORT -->
+            <section id="tab-content-report" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-emerald-300 flex items-center gap-2">
+                                <span>📊</span> <span data-i18n="student_report_title">التقرير التعليمي المفصل للطالب</span>
+                            </h2>
+                            <p class="text-sm text-sky-200 mt-1">متابعة دقيقة للأسئلة التي تمت الإجابة عنها، نسبة النجاح، وتقدم كل جزء من الكتب الخمسة.</p>
+                        </div>
+                    </div>
+
+                    <div id="student-report-content" class="mt-4 space-y-5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 12: ⚙️ SETTINGS -->
+            <section id="tab-content-settings" class="tab-section hidden flex-col gap-4">
+                <div class="glass-panel rounded-3xl p-5 max-w-4xl mx-auto w-full">
+                    <h2 class="text-2xl md:text-3xl font-black text-cyan-300 flex items-center gap-2 border-b border-slate-700 pb-3 mb-5">
+                        <span>⚙️</span> <span data-i18n="settings_title">إعدادات اللعبة واللغات والحفظ</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Language Selection -->
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                            <label class="block font-extrabold text-amber-300 mb-2" data-i18n="setting_language">🌍 لغة اللعبة (5 لغات كاملة):</label>
+                            <select id="settings-lang-select" onchange="changeLanguage(this.value)" class="w-full bg-slate-800 border border-cyan-500/50 rounded-xl px-3 py-2.5 text-white font-bold">
+                                <option value="ar">🇸🇦 العربية (RTL)</option>
+                                <option value="en">🇬🇧 English (LTR)</option>
+                                <option value="fr">🇫🇷 Français (LTR)</option>
+                                <option value="ru">🇷🇺 Русский (LTR)</option>
+                                <option value="tr">🇹🇷 Türkçe (LTR)</option>
+                            </select>
+                        </div>
+
+                        <!-- Sound & Music Volume -->
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                            <label class="block font-extrabold text-cyan-300 mb-2">🔊 مستوى المؤثرات الصوتية: <span id="lbl-sfx-vol">80%</span></label>
+                            <input type="range" id="slider-sfx-vol" min="0" max="100" value="80" oninput="updateAudioSettings()" class="w-full accent-cyan-400">
+                            <div class="flex items-center justify-between mt-3">
+                                <span class="text-sm font-bold text-slate-300">🎵 أصوات الطبيعة والبحر الهادئة:</span>
+                                <input type="checkbox" id="chk-ambient-sound" checked onchange="updateAudioSettings()" class="w-5 h-5 accent-emerald-400">
+                            </div>
+                        </div>
+
+                        <!-- Graphics & Animation Speed -->
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                            <label class="block font-extrabold text-emerald-300 mb-2">✨ جودة الرسومات وسرعة الحركات:</label>
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="setGraphicsQuality('high')" id="btn-gfx-high" class="flex-1 bg-emerald-600 text-white font-bold py-1.5 rounded-xl text-xs">عالية (فقاعات وتفاصيل كاملة)</button>
+                                <button onclick="setGraphicsQuality('low')" id="btn-gfx-low" class="flex-1 bg-slate-800 text-slate-300 font-bold py-1.5 rounded-xl text-xs">متوسطة (أداء سريع)</button>
+                            </div>
+                            <label class="block text-xs text-slate-300 mb-1">سرعة الحركات وحجم الواجهة:</label>
+                            <select id="select-ui-scale" onchange="updateUiScale(this.value)" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white font-bold">
+                                <option value="0.95">حجم واجهة صغير (95%)</option>
+                                <option value="1" selected>حجم واجهة قياسي (100%)</option>
+                                <option value="1.08">حجم واجهة كبير للأطفال (108%)</option>
+                            </select>
+                        </div>
+
+                        <!-- Save / Export / Reset Progress -->
+                        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                            <label class="block font-extrabold text-amber-300 mb-2">💾 إدارة حفظ التقدم:</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="manualSaveGame()" class="btn-game bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-floppy-disk"></i> حفظ التقدم الآن
+                                </button>
+                                <button onclick="exportSaveFile()" class="btn-game bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> تصدير ملف الحفظ
+                                </button>
+                                <label class="btn-game cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-upload"></i> استعادة من ملف
+                                    <input type="file" accept=".json" class="hidden" onchange="importSaveFile(event)">
+                                </label>
+                                <button onclick="confirmResetGame()" class="btn-game bg-rose-700 hover:bg-rose-600 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-left"></i> إعادة تعيين اللعبة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Developer Attribution Box in Settings -->
+                    <div class="mt-6 bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 border-2 border-amber-400/70 rounded-2xl p-5 text-center shadow-xl">
+                        <div class="text-3xl mb-1">👨‍🏫</div>
+                        <h3 class="text-xl font-black text-amber-300">إعداد وتطوير د. محسن الكاشف</h3>
+                        <p class="text-cyan-300 font-bold text-base">Dr. Mohsen Elkashef</p>
+                        <p class="text-xs text-slate-300 mt-2 max-w-xl mx-auto">
+                            لعبة «صياد السمك | Fishing Adventure» صممت خصيصًا لتقديم تجربة تعليمية وترفيهية متكاملة تربط بين متعة المغامرة البحرية وإتقان المحتوى التعليمي للكتب المدرسية بدقة علمية وتربوية.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-950/80 border-t border-slate-800 py-2.5 px-4 text-center text-xs text-slate-400">
+            <span>صياد السمك | Fishing Adventure</span> — <strong class="text-amber-300">إعداد وتطوير د. محسن الكاشف | Dr. Mohsen Elkashef</strong>
+        </footer>
+    </div>
+
+    <!-- ==================== EDUCATIONAL QUESTION MODAL (DURING FISHING) ==================== -->
+    <div id="question-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel border-4 border-amber-400 rounded-3xl max-w-2xl w-full p-5 md:p-6 shadow-2xl animate-card-reveal">
+            <!-- Header with Book & Exact Page Reference -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🐟</span>
+                    <div>
+                        <div class="text-xs text-amber-300 font-extrabold" id="q-modal-book-title">الطريق إلى العربية - المستوى الثاني</div>
+                        <div class="text-xs text-cyan-300 font-bold flex items-center gap-2">
+                            <span id="q-modal-page-badge" class="bg-cyan-950 border border-cyan-400 px-2 py-0.5 rounded-md">صفحة 15</span>
+                            <span id="q-modal-chapter-badge" class="text-slate-300">الدرس الأول: الإشارة</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="q-modal-type-badge" class="bg-purple-900/80 text-purple-200 border border-purple-400/50 text-xs font-bold px-2.5 py-1 rounded-xl">اختيار من متعدد</span>
+                    <span id="q-modal-diff-badge" class="bg-emerald-900/80 text-emerald-200 border border-emerald-400/50 text-xs font-bold px-2.5 py-1 rounded-xl">سهل</span>
+                </div>
+            </div>
+
+            <!-- Fish on the Hook Preview -->
+            <div class="my-3 bg-sky-950/70 border border-sky-500/40 rounded-2xl p-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="q-modal-fish-icon" class="text-3xl animate-bounce">🐠</div>
+                    <div>
+                        <div class="text-xs text-sky-300 font-bold">سمكة تقترب من الطعم! أجب بشكل صحيح لصيدها:</div>
+                        <div id="q-modal-fish-name" class="text-sm font-black text-white">سمكة المهرج (Amphiprioninae)</div>
+                    </div>
+                </div>
+                <div class="text-xs font-bold text-amber-300 bg-slate-900 px-3 py-1.5 rounded-xl border border-amber-400/40">
+                    المكافأة: <span id="q-modal-reward">+25 🪙 | +20 XP</span>
+                </div>
+            </div>
+
+            <!-- Question Text -->
+            <div class="my-4 bg-slate-900/95 border-2 border-slate-700 rounded-2xl p-4">
+                <p id="q-modal-text" class="text-lg md:text-xl font-black text-white leading-relaxed text-center"></p>
+            </div>
+
+            <!-- Options Container -->
+            <div id="q-modal-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Feedback & Explanation Box -->
+            <div id="q-modal-feedback" class="hidden rounded-2xl p-4 my-3 border-2">
+                <div id="q-modal-feedback-title" class="font-black text-base mb-1"></div>
+                <div id="q-modal-feedback-desc" class="text-sm text-slate-200"></div>
+                <div class="mt-3 flex justify-end gap-2">
+                    <button id="btn-q-retry" onclick="retryCurrentQuestion()" class="hidden btn-game bg-amber-500 text-slate-950 font-black px-5 py-2 rounded-xl text-sm">
+                        محاولة أخرى (فرصة ثانية)
+                    </button>
+                    <button id="btn-q-continue" onclick="proceedAfterQuestion()" class="btn-game bg-emerald-500 text-white font-black px-6 py-2 rounded-xl text-sm">
+                        متابعة وسحب السمكة! 🎣
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DISCOVERY CARD MODAL ==================== -->
+    <div id="card-reveal-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div id="card-reveal-box" class="max-w-md w-full rounded-3xl p-6 border-4 animate-card-reveal text-center relative overflow-hidden">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- ==================== TEACHER DASHBOARD MODAL (PASSWORD PROTECTED) ==================== -->
+    <div id="teacher-dashboard-modal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-lg overflow-y-auto p-4 md:p-6 hidden">
+        <div class="max-w-6xl mx-auto glass-panel rounded-3xl p-5 md:p-6 border-2 border-purple-400">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-700 flex items-center justify-center text-2xl">👨‍🏫</div>
+                    <div>
+                        <h2 class="text-2xl font-black text-purple-300">لوحة تحكم المعلم | Teacher Dashboard</h2>
+                        <p class="text-xs text-amber-300 font-bold">إعداد وتطوير د. محسن الكاشف | Dr. Mohsen Elkashef</p>
+                    </div>
+                </div>
+                <button onclick="closeTeacherDashboard()" class="btn-game bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-xmark"></i> إغلاق لوحة المعلم
+                </button>
+            </div>
+
+            <!-- Teacher Sub-tabs -->
+            <div class="flex flex-wrap gap-2 my-4">
+                <button onclick="switchTeacherTab('t-books')" class="t-tab-btn bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs sm:text-sm">📚 إدارة الكتب ورفع PDF</button>
+                <button onclick="switchTeacherTab('t-questions')" class="t-tab-btn bg-slate-800 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm">❓ إدارة بنك الأسئلة (<span id="t-total-q-count">155</span>)</button>
+                <button onclick="switchTeacherTab('t-ranges')" class="t-tab-btn bg-slate-800 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm">📑 إدارة نطاقات الـ 50 صفحة</button>
+                <button onclick="switchTeacherTab('t-reports')" class="t-tab-btn bg-slate-800 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm">📊 تقارير أداء الطالب</button>
+            </div>
+
+            <!-- Teacher Section 1: Manage Books & Real PDF Upload -->
+            <div id="teacher-sec-t-books" class="teacher-sec space-y-4">
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-purple-500/40">
+                    <h3 class="font-black text-amber-300 text-lg mb-2">رفع أو استبدال كتاب بصيغة PDF (مع استخراج النص وتحليل عدد الصفحات الفعلي)</h3>
+                    <p class="text-xs text-slate-300 mb-3">
+                        يدعم النظام قراءة ملفات PDF مباشرة عبر متصفحك باستخدام محرك PDF.js، ويقوم بحساب العدد الحقيقي للصفحات وتقسيمها تلقائيًا إلى أجزاء من 50 صفحة، واستخراج النصوص والفصول لإنشاء أسئلة مرتبطة بأرقام الصفحات.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1">اختر خانة الكتاب (1 إلى 5):</label>
+                            <select id="t-upload-slot" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white font-bold">
+                                <option value="0">الكتاب 1: الطريق إلى العربية - المستوى الثاني (مرفوع)</option>
+                                <option value="1">الكتاب 2 (خانة متاحة لرفع كتاب PDF)</option>
+                                <option value="2">الكتاب 3 (خانة متاحة لرفع كتاب PDF)</option>
+                                <option value="3">الكتاب 4 (خانة متاحة لرفع كتاب PDF)</option>
+                                <option value="4">الكتاب 5 (خانة متاحة لرفع كتاب PDF)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1">ملف الكتاب (PDF):</label>
+                            <input type="file" id="t-pdf-file-input" accept=".pdf" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-1.5 text-xs text-white">
+                        </div>
+                        <button onclick="processTeacherPdfUpload()" class="btn-game bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-sm">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> تحليل الكتاب واستخراج الصفحات
+                        </button>
+                    </div>
+                    <div id="t-pdf-upload-status" class="mt-2 text-xs font-bold text-cyan-300"></div>
+                </div>
+
+                <div id="teacher-books-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Teacher Section 2: Manage Questions -->
+            <div id="teacher-sec-t-questions" class="teacher-sec hidden space-y-4">
+                <!-- Add / Edit Question Form -->
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-cyan-500/40">
+                    <h3 class="font-black text-cyan-300 text-base mb-3">إضافة سؤال تعليمي جديد مرتبط برقم الصفحة</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="text-xs text-slate-300">الكتاب:</label>
+                            <select id="tq-book" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-300">رقم الصفحة (دقيق):</label>
+                            <input type="number" id="tq-page" min="1" value="15" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-300">نوع السؤال:</label>
+                            <select id="tq-type" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                                <option value="mcq">اختيار من متعدد</option>
+                                <option value="tf">صح أو خطأ</option>
+                                <option value="fill">أكمل الفراغ</option>
+                                <option value="meaning">معنى/مضاد الكلمة</option>
+                                <option value="order">ترتيب الجملة</option>
+                                <option value="comprehension">فهم واستيعاب</option>
+                                <option value="error">اكتشاف الخطأ</option>
+                                <option value="application">سؤال تطبيقي</option>
+                                <option value="challenge">سؤال تحدي</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-300">مستوى الصعوبة:</label>
+                            <select id="tq-diff" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                                <option value="easy">سهل</option>
+                                <option value="medium">متوسط</option>
+                                <option value="hard">صعب</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="text-xs text-slate-300">نص السؤال:</label>
+                        <input type="text" id="tq-text" placeholder="اكتب السؤال المستخرج من الصفحة المحددة..." class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white mt-1">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                        <input type="text" id="tq-opt0" placeholder="الاختيار الأول (الصحيح)" class="bg-emerald-950/60 border border-emerald-500 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                        <input type="text" id="tq-opt1" placeholder="الاختيار الثاني" class="bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                        <input type="text" id="tq-opt2" placeholder="الاختيار الثالث" class="bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                        <input type="text" id="tq-opt3" placeholder="الاختيار الرابع" class="bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                    </div>
+                    <div class="mt-3 flex justify-end">
+                        <button onclick="addTeacherQuestion()" class="btn-game bg-emerald-600 text-white font-bold px-5 py-2 rounded-xl text-xs">
+                            <i class="fa-solid fa-plus"></i> إضافة واعتماد السؤال في البنك
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter & List Questions -->
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-300">تصفية حسب الصفحة:</span>
+                        <input type="number" id="tq-filter-page" oninput="renderTeacherQuestions()" placeholder="كل الصفحات" class="w-28 bg-slate-800 border border-slate-600 rounded-xl px-2.5 py-1 text-xs text-white">
+                    </div>
+                    <span class="text-xs text-emerald-300 font-bold">✅ بنك الأسئلة معتمد ومرتبط بالصفحات المصدرية</span>
+                </div>
+
+                <div id="teacher-questions-list" class="max-h-96 overflow-y-auto space-y-2 pr-1">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Teacher Section 3: Page Ranges -->
+            <div id="teacher-sec-t-ranges" class="teacher-sec hidden space-y-4">
+                <div id="teacher-ranges-content" class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Teacher Section 4: Student Reports -->
+            <div id="teacher-sec-t-reports" class="teacher-sec hidden space-y-4">
+                <div id="teacher-reports-content" class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CUSTOM DIALOG / MESSAGE MODAL (NO BROWSER ALERTS) ==================== -->
+    <div id="custom-dialog-modal" class="fixed inset-0 z-[90] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-panel border-2 border-cyan-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl animate-card-reveal">
+            <div id="dialog-icon" class="text-5xl mb-3">ℹ️</div>
+            <h3 id="dialog-title" class="text-xl font-black text-amber-300 mb-2"></h3>
+            <div id="dialog-message" class="text-sm text-slate-200 leading-relaxed mb-5"></div>
+            <div id="dialog-input-wrapper" class="hidden mb-4">
+                <input type="password" id="dialog-pin-input" placeholder="أدخل رمز المعلم (الافتراضي: 1234)" class="w-full bg-slate-900 border border-purple-400 rounded-xl px-4 py-2.5 text-center text-white font-bold">
+            </div>
+            <div id="dialog-buttons" class="flex items-center justify-center gap-3">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== COMPLETE GAME LOGIC & DATABASES ==================== -->
+    <script>
+        // Configure PDF.js worker if available
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        /* =========================================================================
+           SECTION 1: MULTI-LANGUAGE TRANSLATION SYSTEM (5 FULL LANGUAGES)
+           Arabic (RTL), English, French, Russian, Turkish (LTR)
+        ========================================================================= */
+        const I18N = {
+            ar: {
+                dir: 'rtl',
+                game_title: 'صياد السمك',
+                edu_game_badge: 'اللعبة التعليمية التفاعلية الاحترافية',
+                teacher_dashboard: 'لوحة المعلم',
+                teacher_short: 'المعلم',
+                active_book_label: 'الكتاب التعليمي النشط والصفحات المحددة:',
+                btn_start_play: 'ابدأ اللعب والمغامرة الآن!',
+                btn_game_info: 'معلومات اللعبة',
+                level_short: 'مستوى',
+                tab_fishing: 'الصيد',
+                tab_books: 'مكتبة الكتب',
+                tab_shop: 'المتجر',
+                tab_encyclopedia: 'موسوعة الأسماك',
+                tab_cards: 'البطاقات',
+                tab_achievements: 'الإنجازات',
+                tab_market: 'سوق بيع الأسماك',
+                tab_boat: 'تطوير المركب',
+                tab_map: 'خريطة البحار',
+                tab_logbook: 'سجل الصياد',
+                tab_report: 'تقرير الطالب',
+                tab_settings: 'الإعدادات',
+                current_zone: 'المنطقة البحرية',
+                current_rod: 'السنارة الحالية',
+                current_boat: 'المركب الحالي',
+                depth_meter: 'العمق',
+                rod_power: 'قوة السنارة',
+                fish_resistance: 'مقاومة السمكة',
+                change_zone: 'تغيير المنطقة',
+                change_pages: 'تغيير الصفحات',
+                btn_cast: 'إلقاء السنارة',
+                btn_reel: 'سحب السنارة!',
+                session_catches: 'صيد الجلسة:',
+                remaining_questions: 'الأسئلة المتبقية بالنطاق:',
+                extinct_mission_btn: 'رحلة عبر الزمن: اكتشاف سمكة منقرضة!',
+                rod_upgrade_ready: 'اصطدت 5 أسماك! فرصة تطوير السنارة متاحة',
+                book_library_title: 'مكتبة الكتب التعليمية الخمسة | Book Library',
+                book_library_desc: 'الأسئلة التعليمية مستخرجة حصريًا من الكتاب المحدد ونطاق الصفحات الذي تختاره بدقة تامة دون خلط أو إضافة خارجية.',
+                step_2_pages: 'الخطوة الثانية: تحديد الصفحات',
+                choose_pages_title: '«اختر الصفحات التي تريد التدريب عليها»',
+                parts_50_pages: 'أقسام الكتاب (كل جزء 50 صفحة): يمكنك اختيار جزء واحد أو أكثر',
+                custom_range_label: 'استخدام نطاق صفحات مخصص يدويًا (من صفحة ... إلى صفحة ...)',
+                start_page: 'صفحة البداية:',
+                end_page: 'صفحة النهاية:',
+                btn_start_training: 'بدء التدريب والصيد',
+                shop_title: 'متجر الصياد والمعدات الاحترافية',
+                shop_desc: 'اشترِ أقوى السنارات والطعوم والمحركات والمعدات النادرة للوصول إلى الأعماق السحيقة!',
+                encyclopedia_title: 'متحف وموسوعة الأسماك العلمية',
+                cards_title: 'مجموعة بطاقات الاكتشاف والأسماك المنقرضة',
+                daily_quests_title: 'المهام اليومية للصياد',
+                achievements_title: 'وسام الإنجازات الكبرى',
+                market_title: 'سوق بيع الأسماك والسجل المالي',
+                btn_sell_all: 'بيع جميع الأسماك غير المحفوظة',
+                financial_ledger: 'السجل المالي (المبيعات والمشتريات)',
+                rod_upgrade_title: 'ورشة تطوير السنارة (فرصة تطوير كل 5 أسماك)',
+                boat_upgrade_title: 'أسطول المراكب وتطوير السفينة',
+                sea_map_title: 'خريطة البحار والأعماق العشرة',
+                logbook_title: 'سجل الصياد الشامل',
+                student_report_title: 'التقرير التعليمي المفصل للطالب',
+                settings_title: 'إعدادات اللعبة واللغات والحفظ',
+                setting_language: '🌍 لغة اللعبة (5 لغات كاملة):'
+            },
+            en: {
+                dir: 'ltr',
+                game_title: 'Fishing Adventure',
+                edu_game_badge: 'Professional Interactive Educational Game',
+                teacher_dashboard: 'Teacher Dashboard',
+                teacher_short: 'Teacher',
+                active_book_label: 'Active Educational Book & Selected Pages:',
+                btn_start_play: 'Start Playing & Adventure Now!',
+                btn_game_info: 'Game Info',
+                level_short: 'Lvl',
+                tab_fishing: 'Fishing',
+                tab_books: 'Book Library',
+                tab_shop: 'Shop',
+                tab_encyclopedia: 'Fish Encyclopedia',
+                tab_cards: 'Cards',
+                tab_achievements: 'Achievements',
+                tab_market: 'Fish Market',
+                tab_boat: 'Boat & Rod Upgrade',
+                tab_map: 'Sea Map',
+                tab_logbook: 'Angler Logbook',
+                tab_report: 'Student Report',
+                tab_settings: 'Settings',
+                current_zone: 'Marine Zone',
+                current_rod: 'Current Rod',
+                current_boat: 'Current Boat',
+                depth_meter: 'Depth',
+                rod_power: 'Rod Strength',
+                fish_resistance: 'Fish Resistance',
+                change_zone: 'Change Zone',
+                change_pages: 'Change Pages',
+                btn_cast: 'Cast Line',
+                btn_reel: 'Reel In!',
+                session_catches: 'Session Catches:',
+                remaining_questions: 'Questions Left in Range:',
+                extinct_mission_btn: 'Time Travel: Discover Extinct Fish!',
+                rod_upgrade_ready: '5 Fish Caught! Rod Upgrade Ready',
+                book_library_title: 'Five Educational Books Library',
+                book_library_desc: 'Educational questions are strictly extracted from the selected book and exact page range.',
+                step_2_pages: 'Step 2: Select Pages',
+                choose_pages_title: '"Choose the Pages You Want to Practice"',
+                parts_50_pages: 'Book Parts (50 Pages Each): Select one or more parts',
+                custom_range_label: 'Use Custom Page Range (From Page ... To Page ...)',
+                start_page: 'Start Page:',
+                end_page: 'End Page:',
+                btn_start_training: 'Start Practice & Fishing',
+                shop_title: 'Pro Angler Equipment Shop',
+                shop_desc: 'Buy stronger rods, baits, engines, and rare gear to reach abyssal depths!',
+                encyclopedia_title: 'Scientific Fish Museum & Encyclopedia',
+                cards_title: 'Discovery & Extinct Fish Cards',
+                daily_quests_title: 'Daily Angler Quests',
+                achievements_title: 'Grand Achievements',
+                market_title: 'Fish Market & Financial Ledger',
+                btn_sell_all: 'Sell All Unsaved Fish',
+                financial_ledger: 'Financial Ledger (Sales & Purchases)',
+                rod_upgrade_title: 'Rod Upgrade Workshop (Every 5 Fish)',
+                boat_upgrade_title: 'Boats Fleet & Ship Upgrades',
+                sea_map_title: 'Interactive Sea Map (10 Zones)',
+                logbook_title: 'Comprehensive Angler Logbook',
+                student_report_title: 'Detailed Student Educational Report',
+                settings_title: 'Game Settings, Languages & Save',
+                setting_language: '🌍 Game Language (5 Full Languages):'
+            },
+            fr: {
+                dir: 'ltr',
+                game_title: 'Aventure de Pêche',
+                edu_game_badge: 'Jeu Éducatif Interactif Professionnel',
+                teacher_dashboard: 'Espace Enseignant',
+                teacher_short: 'Prof',
+                active_book_label: 'Livre Éducatif Actif & Pages Sélectionnées:',
+                btn_start_play: 'Commencer à Jouer Maintenant!',
+                btn_game_info: 'Infos du Jeu',
+                level_short: 'Niv',
+                tab_fishing: 'Pêche',
+                tab_books: 'Bibliothèque',
+                tab_shop: 'Boutique',
+                tab_encyclopedia: 'Encyclopédie',
+                tab_cards: 'Cartes',
+                tab_achievements: 'Succès',
+                tab_market: 'Marché aux Poissons',
+                tab_boat: 'Améliorer Bateau',
+                tab_map: 'Carte des Mers',
+                tab_logbook: 'Journal du Pêcheur',
+                tab_report: 'Rapport Élève',
+                tab_settings: 'Paramètres',
+                current_zone: 'Zone Marine',
+                current_rod: 'Canne Actuelle',
+                current_boat: 'Bateau Actuel',
+                depth_meter: 'Profondeur',
+                rod_power: 'Force Canne',
+                fish_resistance: 'Résistance',
+                change_zone: 'Changer Zone',
+                change_pages: 'Changer Pages',
+                btn_cast: 'Lancer la Ligne',
+                btn_reel: 'Mouliner!',
+                session_catches: 'Prises:',
+                remaining_questions: 'Questions Restantes:',
+                extinct_mission_btn: 'Voyage Temporel: Poisson Éteint!',
+                rod_upgrade_ready: '5 Poissons! Amélioration Prête',
+                book_library_title: 'Bibliothèque des Cinq Livres Éducatifs',
+                book_library_desc: 'Les questions proviennent strictement du livre et des pages sélectionnés.',
+                step_2_pages: 'Étape 2: Choisir les Pages',
+                choose_pages_title: '«Choisissez les pages à réviser»',
+                parts_50_pages: 'Parties de 50 pages: Sélectionnez une ou plusieurs parties',
+                custom_range_label: 'Plage de pages personnalisée (De ... À ...)',
+                start_page: 'Page Début:',
+                end_page: 'Page Fin:',
+                btn_start_training: 'Commencer Entraînement & Pêche',
+                shop_title: 'Boutique du Pêcheur Pro',
+                shop_desc: 'Achetez des cannes, appâts, moteurs et équipements rares!',
+                encyclopedia_title: 'Musée & Encyclopédie Scientifique',
+                cards_title: 'Cartes de Découverte & Fossiles',
+                daily_quests_title: 'Quêtes Quotidiennes',
+                achievements_title: 'Grands Succès',
+                market_title: 'Marché aux Poissons & Finances',
+                btn_sell_all: 'Vendre Tout (Non gardé)',
+                financial_ledger: 'Registre Financier',
+                rod_upgrade_title: 'Atelier Canne à Pêche',
+                boat_upgrade_title: 'Flotte de Bateaux',
+                sea_map_title: 'Carte Interactive des Mers',
+                logbook_title: 'Journal Complet du Pêcheur',
+                student_report_title: 'Rapport Éducatif de l\'Élève',
+                settings_title: 'Paramètres, Langues & Sauvegarde',
+                setting_language: '🌍 Langue du Jeu (5 Langues):'
+            },
+            ru: {
+                dir: 'ltr',
+                game_title: 'Рыболовное Приключение',
+                edu_game_badge: 'Профессиональная Обучающая Игра',
+                teacher_dashboard: 'Панель Учителя',
+                teacher_short: 'Учитель',
+                active_book_label: 'Активная Книга и Выбранные Страницы:',
+                btn_start_play: 'Начать Игру Сейчас!',
+                btn_game_info: 'Об Игре',
+                level_short: 'Ур.',
+                tab_fishing: 'Рыбалка',
+                tab_books: 'Библиотека',
+                tab_shop: 'Магазин',
+                tab_encyclopedia: 'Энциклопедия',
+                tab_cards: 'Карточки',
+                tab_achievements: 'Достижения',
+                tab_market: 'Рыбный Рынок',
+                tab_boat: 'Лодка и Удочка',
+                tab_map: 'Карта Морей',
+                tab_logbook: 'Дневник Рыбака',
+                tab_report: 'Отчет Ученика',
+                tab_settings: 'Настройки',
+                current_zone: 'Морская Зона',
+                current_rod: 'Удочка',
+                current_boat: 'Лодка',
+                depth_meter: 'Глубина',
+                rod_power: 'Прочность',
+                fish_resistance: 'Сопротивление',
+                change_zone: 'Сменить Зону',
+                change_pages: 'Сменить Страницы',
+                btn_cast: 'Забросить Удочку',
+                btn_reel: 'Тянуть!',
+                session_catches: 'Улов за сессию:',
+                remaining_questions: 'Осталось вопросов:',
+                extinct_mission_btn: 'Путешествие во времени: Вымершая рыба!',
+                rod_upgrade_ready: '5 рыб поймано! Доступно улучшение',
+                book_library_title: 'Библиотека Пяти Учебных Книг',
+                book_library_desc: 'Вопросы берутся строго из выбранной книги и указанного диапазона страниц.',
+                step_2_pages: 'Шаг 2: Выбор страниц',
+                choose_pages_title: '«Выберите страницы для тренировки»',
+                parts_50_pages: 'Части книги (по 50 страниц): выберите одну или несколько',
+                custom_range_label: 'Свой диапазон страниц (От ... До ...)',
+                start_page: 'Начальная стр.:',
+                end_page: 'Конечная стр.:',
+                btn_start_training: 'Начать Тренировку и Рыбалку',
+                shop_title: 'Магазин Рыболовного Снаряжения',
+                shop_desc: 'Покупайте удочки, наживки, моторы и редкое снаряжение!',
+                encyclopedia_title: 'Научный Музей и Энциклопедия Рыб',
+                cards_title: 'Коллекция Карточек',
+                daily_quests_title: 'Ежедневные Задания',
+                achievements_title: 'Достижения',
+                market_title: 'Рыбный Рынок и Финансы',
+                btn_sell_all: 'Продать всю несохраненную рыбу',
+                financial_ledger: 'Финансовый Журнал',
+                rod_upgrade_title: 'Мастерская Удочек',
+                boat_upgrade_title: 'Флот Лодок и Катеров',
+                sea_map_title: 'Карта Морей (10 Зон)',
+                logbook_title: 'Полный Дневник Рыбака',
+                student_report_title: 'Учебный Отчет Ученика',
+                settings_title: 'Настройки, Язык и Сохранение',
+                setting_language: '🌍 Язык Игры (5 Языков):'
+            },
+            tr: {
+                dir: 'ltr',
+                game_title: 'Balıkçılık Macerası',
+                edu_game_badge: 'Profesyonel Eğitici Çocuk Oyunu',
+                teacher_dashboard: 'Öğretmen Paneli',
+                teacher_short: 'Öğretmen',
+                active_book_label: 'Aktif Eğitim Kitabı ve Seçili Sayfalar:',
+                btn_start_play: 'Hemen Oynamaya Başla!',
+                btn_game_info: 'Oyun Bilgisi',
+                level_short: 'Sev',
+                tab_fishing: 'Balık Tutma',
+                tab_books: 'Kitaplık',
+                tab_shop: 'Mağaza',
+                tab_encyclopedia: 'Ansiklopedi',
+                tab_cards: 'Kartlar',
+                tab_achievements: 'Başarımlar',
+                tab_market: 'Balık Pazarı',
+                tab_boat: 'Tekne Geliştirme',
+                tab_map: 'Deniz Haritası',
+                tab_logbook: 'Balıkçı Günlüğü',
+                tab_report: 'Öğrenci Raporu',
+                tab_settings: 'Ayarlar',
+                current_zone: 'Deniz Bölgesi',
+                current_rod: 'Mevcut Olta',
+                current_boat: 'Mevcut Tekne',
+                depth_meter: 'Derinlik',
+                rod_power: 'Olta Gücü',
+                fish_resistance: 'Balık Direnci',
+                change_zone: 'Bölge Değiştir',
+                change_pages: 'Sayfa Değiştir',
+                btn_cast: 'Oltayı At',
+                btn_reel: 'Oltayı Çek!',
+                session_catches: 'Bu Oturum:',
+                remaining_questions: 'Kalan Sorular:',
+                extinct_mission_btn: 'Zaman Yolculuğu: Soyu Tükenen Balık!',
+                rod_upgrade_ready: '5 Balık Tutuldu! Olta Geliştirme Hazır',
+                book_library_title: 'Beş Eğitim Kitabı Kütüphanesi',
+                book_library_desc: 'Eğitim soruları yalnızca seçilen kitaptan ve belirlenen sayfa aralığından alınır.',
+                step_2_pages: 'Adım 2: Sayfa Seçimi',
+                choose_pages_title: '«Çalışmak İstediğiniz Sayfaları Seçin»',
+                parts_50_pages: 'Kitap Bölümleri (Her biri 50 sayfa): Bir veya daha fazla seçin',
+                custom_range_label: 'Özel Sayfa Aralığı Kullan (Başlangıç ... Bitiş ...)',
+                start_page: 'Başlangıç Sayfası:',
+                end_page: 'Bitiş Sayfası:',
+                btn_start_training: 'Eğitime ve Balık Tutma Başla',
+                shop_title: 'Profesyonel Balıkçı Mağazası',
+                shop_desc: 'Derin denizlere ulaşmak için güçlü oltalar, yemler ve motorlar satın alın!',
+                encyclopedia_title: 'Bilimsel Balık Müzesi ve Ansiklopedisi',
+                cards_title: 'Keşif ve Fosil Kartları',
+                daily_quests_title: 'Günlük Görevler',
+                achievements_title: 'Büyük Başarımlar',
+                market_title: 'Balık Pazarı ve Finans Kaydı',
+                btn_sell_all: 'Kilitli Olmayan Tüm Balıkları Sat',
+                financial_ledger: 'Finansal Kayıt Defteri',
+                rod_upgrade_title: 'Olta Geliştirme Atölyesi',
+                boat_upgrade_title: 'Tekne Filosu ve Geliştirme',
+                sea_map_title: 'Etkileşimli Deniz Haritası (10 Bölge)',
+                logbook_title: 'Kapsamlı Balıkçı Günlüğü',
+                student_report_title: 'Detaylı Öğrenci Eğitim Raporu',
+                settings_title: 'Oyun Ayarları, Dil ve Kayıt',
+                setting_language: '🌍 Oyun Dili (5 Tam Dil):'
+            }
+        };
+
+        /* =========================================================================
+           SECTION 2: SOUND SYNTHESIZER (WEB AUDIO API - NO EXTERNAL ASSETS NEEDED)
+        ========================================================================= */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+                this.volume = 0.8;
+                this.ambientEnabled = true;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+            playTone(freq, type = 'sine', duration = 0.2, delay = 0, volScale = 1) {
+                if (this.muted || this.volume <= 0) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime + delay;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, now);
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.exponentialRampToValueAtTime(Math.max(0.01, this.volume * 0.25 * volScale), now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + duration + 0.02);
+            }
+            cast() {
+                this.playTone(520, 'sine', 0.15, 0);
+                this.playTone(340, 'sine', 0.25, 0.1);
+                this.playTone(220, 'triangle', 0.3, 0.22);
+            }
+            bite() {
+                this.playTone(660, 'square', 0.12, 0, 0.7);
+                this.playTone(880, 'square', 0.15, 0.14, 0.8);
+            }
+            reel() {
+                this.playTone(440 + Math.random() * 160, 'triangle', 0.07, 0, 0.5);
+            }
+            coin() {
+                this.playTone(987.77, 'sine', 0.1, 0);
+                this.playTone(1318.51, 'sine', 0.28, 0.09);
+            }
+            correct() {
+                this.playTone(523.25, 'triangle', 0.12, 0);
+                this.playTone(659.25, 'triangle', 0.12, 0.1);
+                this.playTone(783.99, 'triangle', 0.14, 0.2);
+                this.playTone(1046.50, 'sine', 0.35, 0.3);
+            }
+            wrong() {
+                this.playTone(300, 'sawtooth', 0.18, 0, 0.6);
+                this.playTone(240, 'sawtooth', 0.28, 0.16, 0.6);
+            }
+            fanfare() {
+                const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+                const times = [0, 0.12, 0.24, 0.36, 0.52, 0.66];
+                notes.forEach((n, i) => this.playTone(n, 'triangle', 0.22, times[i], 0.9));
+            }
+        }
+        const SFX = new SoundEngine();
+
+        /* =========================================================================
+           SECTION 3: RODS, BOATS, SHOP EQUIPMENT & 10 MARINE ZONES DATABASES
+        ========================================================================= */
+        const RODS_DB = [
+            { id: 'rod_wood', icon: '🎋', name: { ar: 'سنارة خشبية', en: 'Wooden Rod', fr: 'Canne en Bois', ru: 'Деревянная удочка', tr: 'Ahşap Olta' }, price: 0, length: 20, maxDepth: 25, power: 15, speed: 1.0, minLevel: 1, suitable: 'أسماك الشاطئ والمياه الضحلة الصغيرة' },
+            { id: 'rod_copper', icon: '🥉', name: { ar: 'سنارة نحاسية', en: 'Copper Rod', fr: 'Canne en Cuivre', ru: 'Медная удочка', tr: 'Bakır Olta' }, price: 180, length: 45, maxDepth: 50, power: 35, speed: 1.25, minLevel: 2, suitable: 'أسماك الشعاب المرجانية والبحر المتوسط' },
+            { id: 'rod_silver', icon: '🥈', name: { ar: 'سنارة فضية', en: 'Silver Rod', fr: 'Canne en Argent', ru: 'Серебряная удочка', tr: 'Gümüş Olta' }, price: 450, length: 90, maxDepth: 100, power: 65, speed: 1.5, minLevel: 3, suitable: 'أسماك المحيط المفتوح والتونة والسلمون' },
+            { id: 'rod_gold', icon: '🥇', name: { ar: 'سنارة ذهبية', en: 'Golden Rod', fr: 'Canne d\'Or', ru: 'Золотая удочка', tr: 'Altın Olta' }, price: 950, length: 160, maxDepth: 180, power: 120, speed: 1.8, minLevel: 5, suitable: 'أسماك الأعماق المتوسطة وسمكة السيف والراي' },
+            { id: 'rod_deep', icon: '⚓', name: { ar: 'سنارة الأعماق', en: 'Deep-Sea Rod', fr: 'Canne des Abysses', ru: 'Глубоководная удочка', tr: 'Derin Deniz Oltası' }, price: 1800, length: 300, maxDepth: 350, power: 250, speed: 2.1, minLevel: 7, suitable: 'أسماك الأعماق السحيقة والكهوف البحرية' },
+            { id: 'rod_pro', icon: '⚡', name: { ar: 'سنارة احترافية', en: 'Pro Carbon Rod', fr: 'Canne Pro', ru: 'Профессиональная удочка', tr: 'Profesyonel Olta' }, price: 3200, length: 500, maxDepth: 600, power: 500, speed: 2.5, minLevel: 9, suitable: 'الأسماك النادرة والقروش العملاقة' },
+            { id: 'rod_legend', icon: '👑', name: { ar: 'سنارة أسطورية', en: 'Legendary Trident Rod', fr: 'Canne Légendaire', ru: 'Легендарная удочка', tr: 'Efsanevi Olta' }, price: 6000, length: 1000, maxDepth: 1200, power: 1200, speed: 3.2, minLevel: 12, suitable: 'جميع الأسماك والمخلوقات الأسطورية والمنقرضة' }
+        ];
+
+        const BOATS_DB = [
+            { id: 'boat_small', icon: '🛶', name: { ar: 'مركب صغير', en: 'Small Dinghy', fr: 'Petit Canot', ru: 'Маленькая лодка', tr: 'Küçük Kayık' }, price: 0, speed: 1.0, capacity: 12, maxZone: 2, hullColor: '#b45309', cabinColor: '#f59e0b' },
+            { id: 'boat_wood', icon: '⛵', name: { ar: 'مركب خشبي مطور', en: 'Wooden Sailboat', fr: 'Bateau en Bois', ru: 'Деревянный катер', tr: 'Ahşap Tekne' }, price: 300, speed: 1.3, capacity: 25, maxZone: 4, hullColor: '#92400e', cabinColor: '#fde047' },
+            { id: 'boat_fast', icon: '🚤', name: { ar: 'مركب سريع', en: 'Speedboat', fr: 'Vedette Rapide', ru: 'Скоростной катер', tr: 'Sürat Teknesi' }, price: 750, speed: 1.7, capacity: 45, maxZone: 6, hullColor: '#0284c7', cabinColor: '#e0f2fe' },
+            { id: 'boat_pro', icon: '⛴️', name: { ar: 'مركب احترافي', en: 'Pro Fishing Vessel', fr: 'Navire Pro', ru: 'Проф. судно', tr: 'Profesyonel Gemi' }, price: 1600, speed: 2.1, capacity: 80, maxZone: 8, hullColor: '#0f766e', cabinColor: '#5eead4' },
+            { id: 'boat_deep', icon: '🚢', name: { ar: 'مركب أعماق واستكشاف', en: 'Deep Explorer Ship', fr: 'Navire d\'Exploration', ru: 'Исследователь глубин', tr: 'Derin Keşif Gemisi' }, price: 3000, speed: 2.6, capacity: 150, maxZone: 9, hullColor: '#4338ca', cabinColor: '#c7d2fe' },
+            { id: 'boat_luxury', icon: '🛥️', name: { ar: 'مركب فاخر أسطوري', en: 'Luxury Royal Yacht', fr: 'Yacht de Luxe', ru: 'Роскошная яхта', tr: 'Lüks Kraliyet Yatı' }, price: 5500, speed: 3.5, capacity: 300, maxZone: 10, hullColor: '#ca8a04', cabinColor: '#fef08a' }
+        ];
+
+        const EXTRA_SHOP_ITEMS = [
+            { id: 'bait_worm', category: 'baits', icon: '🪱', name: 'طعم الديدان البحرية النشطة', desc: 'يزيد سرعة انجذاب أسماك الشاطئ والمياه الضحلة بنسبة 20%.', price: 60, minLevel: 1 },
+            { id: 'bait_shrimp', category: 'baits', icon: '🦐', name: 'طعم الروبيان الذهبي', desc: 'يجذب أسماك الشعاب المرجانية والأسماك غير الشائعة بفاعلية عالية.', price: 180, minLevel: 2 },
+            { id: 'bait_glow', category: 'baits', icon: '✨', name: 'طعم مضيء للأعماق السحيقة', desc: 'مخصص لجذب أسماك الفانوس وأبو الشص في الظلام الدامس.', price: 420, minLevel: 5 },
+            { id: 'engine_turbo', category: 'engines', icon: '⚙️', name: 'محرك بحري توربيني', desc: 'يزيد سرعة سحب السنارة واستقرار المركب في الأمواج العالية +15%.', price: 500, minLevel: 3 },
+            { id: 'engine_nuclear', category: 'engines', icon: '🔋', name: 'محرك كهرومغناطيسي صامت', desc: 'لا يخيف الأسماك النادرة ويزيد قوة شد السنارة بنسبة 25%.', price: 1400, minLevel: 6 },
+            { id: 'cloth_vest', category: 'clothes', icon: '🦺', name: 'سترة الصياد الماهر', desc: 'تمنح +10% نقاط خبرة إضافية عند كل إجابة تعليمية صحيحة.', price: 220, minLevel: 2 },
+            { id: 'cloth_captain', category: 'clothes', icon: '🧑‍✈️', name: 'بدلة القبطان الذهبية', desc: 'تمنح +20% عملات ذهبية إضافية عند صيد أي سمكة نادرة.', price: 900, minLevel: 5 },
+            { id: 'tool_sonar', category: 'tools', icon: '📡', name: 'جهاز سونار كاشف الأسماك', desc: 'يكشف أنواع الأسماك النادرة في المياه العميقة ويزيد فرصة ظهورها.', price: 650, minLevel: 4 },
+            { id: 'tool_fossil', category: 'tools', icon: '🧭', name: 'بوصلة الزمن الأحفورية', desc: 'تساعد في مهام اكتشاف الأسماك المنقرضة وتزيد مكافآتها.', price: 1900, minLevel: 7 }
+        ];
+
+        const ZONES_DB = [
+            { id: 1, name: { ar: '1. الشاطئ', en: '1. Sunny Beach', fr: '1. La Plage', ru: '1. Пляж', tr: '1. Sahil' }, depth: 15, difficulty: 'سهل جدًا', reqRodIdx: 0, reqBoatIdx: 0, reqLevel: 1, skyTop: '#38bdf8', waterTop: '#0ea5e9', waterBot: '#0369a1', desc: 'مياه دافئة وهادئة مثالية لبداية رحلة الصيد والتعلم.' },
+            { id: 2, name: { ar: '2. المياه الضحلة', en: '2. Shallow Waters', fr: '2. Eaux Peu Profondes', ru: '2. Мелководье', tr: '2. Sığ Sular' }, depth: 25, difficulty: 'سهل', reqRodIdx: 0, reqBoatIdx: 0, reqLevel: 1, skyTop: '#0ea5e9', waterTop: '#0284c7', waterBot: '#075985', desc: 'تعيش فيها أسماك ملونة ونباتات بحرية قريبة من السطح.' },
+            { id: 3, name: { ar: '3. الشعاب المرجانية', en: '3. Coral Reefs', fr: '3. Récifs Coralliens', ru: '3. Коралловые рифы', tr: '3. Mercan Resifleri' }, depth: 45, difficulty: 'متوسط', reqRodIdx: 1, reqBoatIdx: 1, reqLevel: 2, skyTop: '#0284c7', waterTop: '#0d9488', waterBot: '#115e59', desc: 'بيئة غنية بالشعاب المرجانية الملونة وأسماك الفراشة والأسد.' },
+            { id: 4, name: { ar: '4. البحر المتوسط', en: '4. Mediterranean Sea', fr: '4. Mer Méditerranée', ru: '4. Средиземное море', tr: '4. Akdeniz' }, depth: 85, difficulty: 'متوسط', reqRodIdx: 1, reqBoatIdx: 1, reqLevel: 3, skyTop: '#2563eb', waterTop: '#1d4ed8', waterBot: '#1e3a8a', desc: 'مياه معتدلة تشتهر بأسماك التونة والماكريل والأنقليس.' },
+            { id: 5, name: { ar: '5. المحيط المفتوح', en: '5. Open Ocean', fr: '5. Océan Ouvert', ru: '5. Открытый океан', tr: '5. Açık Okyanus' }, depth: 150, difficulty: 'فوق المتوسط', reqRodIdx: 2, reqBoatIdx: 2, reqLevel: 4, skyTop: '#1d4ed8', waterTop: '#1e40af', waterBot: '#172554', desc: 'أمواج واسعة وأسماك كبيرة وسريعة مثل السلمون وسمكة السيف.' },
+            { id: 6, name: { ar: '6. الأعماق المتوسطة', en: '6. Twilight Zone', fr: '6. Profondeurs Moyennes', ru: '6. Средние глубины', tr: '6. Orta Derinlikler' }, depth: 260, difficulty: 'صعب', reqRodIdx: 3, reqBoatIdx: 2, reqLevel: 5, skyTop: '#1e3a8a', waterTop: '#1e1b4b', waterBot: '#0f172a', desc: 'منطقة الشفق البحري حيث يقل الضوء وتظهر سمكة الشمس وسمكة المطرقة.' },
+            { id: 7, name: { ar: '7. الأعماق السحيقة', en: '7. Abyssal Depths', fr: '7. Abysses Profonds', ru: '7. Бездна', tr: '7. Dipsiz Derinlikler' }, depth: 450, difficulty: 'صعب جدًا', reqRodIdx: 4, reqBoatIdx: 3, reqLevel: 7, skyTop: '#0f172a', waterTop: '#090d16', waterBot: '#020617', desc: 'عالم مظلم بارد تعيش فيه أسماك مضيئة مثل سمكة أبو الشص وسمكة الفانوس.' },
+            { id: 8, name: { ar: '8. الكهوف البحرية', en: '8. Underwater Caves', fr: '8. Grottes Marines', ru: '8. Морские пещеры', tr: '8. Deniz Mağaraları' }, depth: 550, difficulty: 'صعب جدًا', reqRodIdx: 4, reqBoatIdx: 3, reqLevel: 8, skyTop: '#1e1b4b', waterTop: '#311042', waterBot: '#090514', desc: 'كهوف صخرية غامضة تحت الماء تأوي التنين البحري المورق والمجداف العملاقة.' },
+            { id: 9, name: { ar: '9. منطقة الأسماك النادرة', en: '9. Rare Sanctuary', fr: '9. Sanctuaire Rare', ru: '9. Зона редких рыб', tr: '9. Nadir Balık Bölgesi' }, depth: 750, difficulty: 'خبير', reqRodIdx: 5, reqBoatIdx: 4, reqLevel: 9, skyTop: '#3b0764', waterTop: '#1e1b4b', waterBot: '#020617', desc: 'محمية المحيط العميقة حيث يسبح القرش الأبيض الكبير وقرش الحوت.' },
+            { id: 10, name: { ar: '10. منطقة الأسماك الأسطورية', en: '10. Legendary Trench', fr: '10. Fosse Légendaire', ru: '10. Легендарная впадина', tr: '10. Efsanevi Çukur' }, depth: 1100, difficulty: 'أسطوري', reqRodIdx: 6, reqBoatIdx: 5, reqLevel: 11, skyTop: '#422006', waterTop: '#1c1917', waterBot: '#000000', desc: 'أعمق نقطة في عالم البحار، تجمع بين أندر الكائنات الحقيقية والمخلوقات الأسطورية.' }
+        ];
+
+        /* =========================================================================
+           SECTION 4: SCIENTIFIC FISH DATABASE (22 REAL + 4 EXTINCT + 4 LEGENDARY)
+           100% Authentic Scientific Names, Real Sizes, Weights, Diets & Facts
+        ========================================================================= */
+        const FISH_DB = [
+            // --- REAL FISH (22 SPECIES) ---
+            {
+                id: 'f_clown', category: 'real', zone: 1, rarity: 'common', price: 25, weightKg: 0.25, reqRodIdx: 0,
+                color1: '#f97316', color2: '#ffffff', shape: 'oval',
+                names: { ar: 'سمكة المهرج', en: 'Clownfish', fr: 'Poisson-clown', ru: 'Рыба-клоун', tr: 'Palyaço Balığı' },
+                latin: 'Amphiprioninae', sizeCm: '10 - 18 cm', realWeight: '150 - 250 g',
+                habitat: 'الشعاب المرجانية الدافئة في المحيطين الهندي والهادئ', depthRange: '1 - 15 م',
+                diet: 'الطحالب الصغيرة والعوالق الحيوانية',
+                fact: 'تعيش في علاقة تكافلية مدهشة مع شقائق النعمان السامة دون أن تصاب بأذى بفضل طبقة مخاطية تحمي جلدها!'
+            },
+            {
+                id: 'f_butterfly', category: 'real', zone: 1, rarity: 'common', price: 30, weightKg: 0.3, reqRodIdx: 0,
+                color1: '#facc15', color2: '#1e293b', shape: 'disc',
+                names: { ar: 'سمكة الفراشة', en: 'Butterflyfish', fr: 'Poisson-papillon', ru: 'Рыба-бабочка', tr: 'Kelebek Balığı' },
+                latin: 'Chaetodontidae', sizeCm: '12 - 22 cm', realWeight: '100 - 300 g',
+                habitat: 'المياه الشاطئية والشعاب المرجانية الاستوائية', depthRange: '2 - 20 م',
+                diet: 'البوليبات المرجانية والديدان البحرية الصغيرة والطحالب',
+                fact: 'تمتلك بقعة سوداء قرب ذيلها تشبه العين لتخدع المفترسات فلا تعرف في أي اتجاه ستسبح!'
+            },
+            {
+                id: 'f_mackerel', category: 'real', zone: 2, rarity: 'common', price: 35, weightKg: 1.2, reqRodIdx: 0,
+                color1: '#38bdf8', color2: '#cbd5e1', shape: 'sleek',
+                names: { ar: 'سمكة الماكريل', en: 'Atlantic Mackerel', fr: 'Maquereau', ru: 'Скумбрия', tr: 'Uskumru' },
+                latin: 'Scomber scombrus', sizeCm: '30 - 50 cm', realWeight: '0.5 - 1.8 kg',
+                habitat: 'شمال المحيط الأطلسي والبحر الأبيض المتوسط', depthRange: '5 - 40 م',
+                diet: 'القشريات الصغيرة والأسماك اليرقية',
+                fact: 'تسبح في أسراب ضخمة متناسقة وتحتاج إلى السباحة المستمرة للحصول على الأكسجين الكافي!'
+            },
+            {
+                id: 'f_parrot', category: 'real', zone: 2, rarity: 'uncommon', price: 50, weightKg: 2.5, reqRodIdx: 0,
+                color1: '#14b8a6', color2: '#f472b6', shape: 'oval',
+                names: { ar: 'سمكة الببغاء', en: 'Parrotfish', fr: 'Poisson-perroquet', ru: 'Рыба-попугай', tr: 'Papağan Balığı' },
+                latin: 'Scaridae', sizeCm: '30 - 70 cm', realWeight: '1.5 - 5 kg',
+                habitat: 'الشعاب المرجانية والمياه الضحلة الاستوائية', depthRange: '3 - 30 م',
+                diet: 'الطحالب الملتصقة بالصخور المرجانية',
+                fact: 'أسنانها مندمجة تشبه منقار الببغاء، وتقوم بطحن الصخور المرجانية وإنتاج الرمال البيضاء الناعمة للشواطئ!'
+            },
+            {
+                id: 'f_puffer', category: 'real', zone: 2, rarity: 'uncommon', price: 60, weightKg: 1.5, reqRodIdx: 0,
+                color1: '#eab308', color2: '#fef08a', shape: 'round',
+                names: { ar: 'سمكة البالون (الينفوخ)', en: 'Pufferfish', fr: 'Poisson-globe', ru: 'Рыба-шар', tr: 'Balon Balığı' },
+                latin: 'Tetraodontidae', sizeCm: '15 - 60 cm', realWeight: '0.8 - 3 kg',
+                habitat: 'المياه الساحلية الدافئة والشعاب المرجانية', depthRange: '5 - 35 م
